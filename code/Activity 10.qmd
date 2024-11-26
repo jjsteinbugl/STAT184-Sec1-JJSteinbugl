@@ -1,0 +1,143 @@
+---
+title: "Covid Analysis"
+execute: 
+  echo: false
+---
+
+## Pseudonym: **Angela the Fourth of Vancouver**
+
+The year is 2021. Now that millions of people have been vaccinated and subsequently infected by COVID, the FDA is re-investigating the efficacy of the vaccine. As an analyst at the FDA, I am tasked with answering the question - does the COVID vaccine reduce the mortality rate of COVID infection? I will use this COVID data set to determine whether the vaccine is related to a reduced mortality rate, and use graphical evidence to support my claims.
+
+```{r}
+#| label: load-packages
+#| include: false
+
+#Load Packages
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(ggplot2)
+
+```
+
+## Import Data
+
+Below, we can see the data set I will be using to study the mortality rate of COVID. It has three variables, age_group, vaccine_status, and outcome.
+
+```{r}
+#| label: Data
+#| warning: false
+#| echo: false
+
+url <- "https://www.openintro.org/data/csv/simpsons_paradox_covid.csv"
+data <- read.csv(url)
+
+#EDA
+head(data)
+summary(data)
+
+
+```
+
+## Mortality Rates vs. Vaccine Status
+
+The first logical step in this research would be to compare the mortality rate to the vaccine status. We can see below that the mortality rate is more than double for the people that are vaccinated than for the people that are not vaccinated, but I believe there is a major bias in the data set, because there are much more people who are vaccinated than not.
+
+```{r}
+# Calculate the mortality rates by vaccine_status
+table(data$vaccine_status, data$outcome)
+
+mortality_rates_vaccine <- data %>%
+  group_by(vaccine_status) %>%
+  summarize(
+    Total = n(),
+    Deaths = sum(outcome == "death"),
+    mortality_Rate = Deaths / Total
+  )
+ggplot(mortality_rates_vaccine, aes(x = vaccine_status, y = mortality_Rate)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Mortality Rates by Vaccine Status", 
+       x = "vaccine_status", 
+       y = "Mortality Rate") +
+  theme_minimal()
+
+
+```
+
+## Mortality vs. Age Group
+
+A hypothesis I have is that age is a major factor in the mortality rate of COVID. We can see in the graph below that my hypothesis seems to be true, because the mortality rate of people age 50+ is almost 20x the rate of people under the age of 50, so this is a variable that should absolutely be taken into consideration.
+
+```{r}
+#mortalitys rate by age_group
+mortality_rate_age <- data %>%
+  select(age_group, outcome) %>%
+  group_by(age_group) %>%
+  summarize(
+    Total = n(),
+    Deaths = sum(outcome == "death"),
+    mortality_Rate = Deaths / Total
+  )
+ggplot(mortality_rate_age, aes(x = age_group, y = mortality_Rate)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Mortality Rates by Age", 
+       x = "age_group", 
+       y = "Mortality Rate") +
+  theme_minimal()
+```
+
+## Checking the Population of the Data Set
+
+I believe that the fact that people aged 50+ have 20x the mortality rate could be due to there being more of that age group in the data set. I have made the graph below to check the population of the data set. But, I am proven wrong, as we can see that there are almost 250,000 people below 50, and only about 26,000 above. Therefore, this only further proves the point that people 50+ have a much higher mortality rate.
+
+```{r}
+#Applications by vaccine_status, age_group
+applications_vaccine_status_age <- data %>%
+  select(age_group, vaccine_status) %>%
+  group_by(age_group, vaccine_status) %>%
+  summarize(
+    Total = n()
+  )
+ggplot(applications_vaccine_status_age, aes(x = age_group, y = Total, fill = vaccine_status)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Study Population by Age and Vaccine Status", 
+       x = "age_group", 
+       y = "Study population") +
+  theme_minimal()
+```
+
+## Putting It All Together
+
+The graph below is a comparison between the mortality rate of the two age groups, as well as between vaccine status within those age groups.
+
+```{r}
+#See mortality rates broken down by vaccine_status and age_group
+mortality_rates_vaccine_status_age <- data %>%
+  group_by(age_group, vaccine_status) %>%
+  summarize(
+    Total = n(),
+    Deaths = sum(outcome == "death"),
+    mortality_Rate = Deaths / Total
+  )
+
+head(mortality_rates_vaccine_status_age)
+
+ggplot(mortality_rates_vaccine_status_age, aes(x = age_group, y = mortality_Rate, fill = vaccine_status)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Mortality Rates by Age and Vaccine Status", 
+       x = "age_group", 
+       y = "Mortality Rate") +
+  theme_minimal()
+```
+
+In conclusion, from this data we can determine that the list from highest mortality rate to lowest mortality rate is:
+
+-   Unvaccinated age 50+
+
+-   Vaccinated age 50+
+
+-   Unvaccinated below 50
+
+-   Vaccinated below 50
+
+    From these results, we can see that the bigger factor in COVID mortality rate is age, where the older a person is the more fatal COVID will be. But, vaccination status also is a factor, where we can see that people who are unvaccinated are more susceptible to COVID and have a higher mortality rate.
