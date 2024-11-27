@@ -1,0 +1,4 @@
+This folder has one data file, a collection of data about people's age and 
+vaccination status, and whether the status affects people's deaths from covid.
+It contains three variables: age group, vaccine status, and outcome: death or
+survived.
