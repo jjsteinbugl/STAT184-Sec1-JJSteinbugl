@@ -1,2 +1,6 @@
-# STAT184-HW-Template
- STAT184 Github Day 1 HW Template
+# Introduction:
+This repo
+# Implementation:
+# Results:
+# Contact:
+For any questions, comments, or other contact, email jjsteinbugl@gmail.com
